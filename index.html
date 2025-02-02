@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .question-container {
+            margin-bottom: 20px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: white;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .option-button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .correct {
+            background-color: #4CAF50 !important;
+            color: white;
+        }
+
+        .incorrect {
+            background-color: #f44336 !important;
+            color: white;
+        }
+
+        #next-button {
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .progress {
+            margin-bottom: 20px;
+        }
+
+        .summary {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .summary h2 {
+            color: #2196F3;
+        }
+
+        .score {
+            font-size: 24px;
+            margin: 15px 0;
+        }
+
+        .quiz-container {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="quiz-container" class="quiz-container">
+        <div class="progress">
+            Pytanie <span id="current-question-num">1</span> z <span id="total-questions">25</span>
+        </div>
+        <div class="question-container">
+            <h2 id="question">Pytanie</h2>
+        </div>
+        <div class="options-container" id="options">
+        </div>
+        <button id="next-button">Następne pytanie</button>
+    </div>
+
+    <div id="summary" class="summary">
+        <h2>Koniec quizu!</h2>
+        <div class="score">
+            Poprawne odpowiedzi: <span id="correct-answers">0</span> z <span id="total-questions-summary">25</span>
+        </div>
+        <div class="score">
+            Wynik procentowy: <span id="percentage">0</span>%
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Do czego służy znacznik <i>?",
+                options: [
+                    "Do wstawiania hiperłączy",
+                    "Do pogrubienia tekstu",
+                    "Do zaznaczania tekstu kursywą",
+                    "Do wstawiania obrazów"
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: "Który z podanych znaczników służy do tworzenia uporządkowanej listy w HTML?",
+                options: ["<ul>", "<ol>", "<li>", "<dl>"],
+                correctAnswer: 1
+            },
+            {
+                question: "W jakiej kolejności podawane są wartości marginesów dla właściwości margin?",
+                options: [
+                    "prawo,lewo,góra,dół",
+                    "lewo,prawo,dół,góra",
+                    "góra,prawo,dół,lewo",
+                    "góra,dół,prawo,lewo"
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: "Jak poprawnie wygląda deklaracja rozpoczynająca dokument HTML?",
+                options: [
+                    "<!DOCTYPE html>",
+                    '<html version="5.0">',
+                    "<DOCTYPE HTML5>",
+                    "<html>"
+                ],
+                correctAnswer: 0
+            },
+            {
+                question: "Jaki jest prawidłowy kod HTML dla dodawania koloru tła?",
+                options: [
+                    '<body bg="red">',
+                    "<background>red</background>",
+                    '<body style="background-color:red">',
+                    '<body color="red">'
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: 'Jak wybrać w CSS element o id "main-container"?',
+                options: [
+                    ".main-container",
+                    "main-container",
+                    "*main-container",
+                    "#main-container"
+                ],
+                correctAnswer: 3
+            },
+            {
+                question: "Jaka jest domyślna wartość właściwości position dla elementów HTML?",
+                options: [
+                    "relative",
+                    "static",
+                    "absolute",
+                    "fixed"
+                ],
+                correctAnswer: 1
+            },
+            {
+                question: "Jakie są zakresy wartości dla poszczególnych komponentów funkcji rgba()?",
+                options: [
+                    "0-255 dla Czerwieni, Zieleni, Niebieskiego oraz 0-1 dla Przezroczystości",
+                    "0-255 dla Czerwieni, Zieleni, Niebieskiego i Przezroczystości",
+                    "0-255 dla Czerwieni, Zieleni, Niebieskiego 0-100 dla Przezroczystości",
+                    "0-100 dla Czerwieni, Zieleni, Niebieskiego i Przezroczystości"
+                ],
+                correctAnswer: 0
+            },
+            {
+                question: "Co zwraca metoda fetch()?",
+                options: [
+                    "obiekt typu Response",
+                    "obiekty typu Promise",
+                    "identyfikator",
+                    "obiekt z pobraną zawartością"
+                ],
+                correctAnswer: 1
+            },
+            {
+                question: 'Jaki będzie wynik operacji: "1102" - 5',
+                options: [
+                    "1102",
+                    "1097",
+                    "191",
+                    "NaN"
+                ],
+                correctAnswer: 1
+            },
+            {
+                question: "Która z wymienionych właściwości należy do obiektu document?",
+                options: [
+                    "document.style",
+                    "document.innerHTML",
+                    "document.attribute",
+                    "document.anchors"
+                ],
+                correctAnswer: 3
+            },
+            {
+                question: "Która z pętli nie istnieje w języku JavaScript",
+                options: [
+                    "for...in",
+                    "for...on",
+                    "do...while",
+                    "for...in range()"
+                ],
+                correctAnswer: 3
+            },
+            {
+                question: "Czym różni się Element.nextSibling() od Element.nextElementSibling()?",
+                options: [
+                    "Element.nextElementSibling() pomija elementy nieblokowe",
+                    "Element.nextElementSibling() pomija elementy biało znakowe",
+                    "Element.nextSibling() pomija elementy niewidzialne",
+                    "Element.nextSibling() pomija elementy o tej samej klasie"
+                ],
+                correctAnswer: 1
+            },
+            {
+                question: "Który z poniższych NIE jest prawidłowym sposobem deklaracji zmiennej?",
+                options: [
+                    "var x = 10;",
+                    "let x = 10;",
+                    "const x = 10;",
+                    "int x = 10"
+                ],
+                correctAnswer: 3
+            },
+            {
+                question: "Jaka jest różnica między == a ===?",
+                options: [
+                    "brak różnicy",
+                    "== porównuje wartość i typ, === tylko wartość",
+                    "=== porównuje wartość i typ, == tylko wartość",
+                    "=== jest używane w starszych wersjach"
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: "W jaki sposób React optymalizuje proces renderowania komponentów?",
+                options: [
+                    "poprzez wirtualny DOM",
+                    "poprzez bezpośrednią manipulację DOM",
+                    "renderując po stronie serwera",
+                    "renderując cały DOM od nowa przy każdej zmianie"
+                ],
+                correctAnswer: 0
+            },
+            {
+                question: "Który hook w react pozwala na zarządzanie stanem?",
+                options: [
+                    "useEffect",
+                    "useState",
+                    "useRef",
+                    "useContext"
+                ],
+                correctAnswer: 1
+            },
+            {
+                question: "Co oznacza akronim WCAG?",
+                options: [
+                    "Website Content Accessibility Guide",
+                    "Web Compliance and Accessibility Guidelines",
+                    "Web Content Accessibility Guidelines",
+                    "Website Communication and Accessibility Guidelines"
+                ],
+                correctAnswer: 2
+            },
+            {
+                question: "Który tag nie jest w formie tagu semantycznego?",
+                options: [
+                    "article",
+                    "div",
+                    "form",
+                    "nav"
+                ],
+                correctAnswer: 1
+            },
+            {
+                question: "Która wersja WCAG obowiązuje na terenie Europy?",
+                options: [
+                    "WCAG 2.0",
+                    "WCAG 2.1",
+                    "WCAG 3.0",
+                    "WCAG 2.9"
+                ],
+                correctAnswer: 1
+            },
+            {
+                question: "Ile istnieje poziomów dostępności WCAG?",
+                options: [
+                    "3",
+                    "4",
+                    "5",
+                    "2"
+                ],
+                correctAnswer: 0
+            },
+            {
+                question: "Czy trzeba oznaczać wszystkie obrazy atrybutem alt?",
+                options: [
+                    "Nie, oznacza on alternatywny obraz w przypadku braku dostępu do głównego.",
+                    "Nie, nie stosuje się go, jest to przestarzały atrybut.",
+                    "Nie, tylko obrazy mające kluczowe znaczenie muszą go posiadać.",
+                    "Tak, wszystkie obrazy muszą go posiadać."
+                ],
+                correctAnswer: 3
+            },
+            {
+                question: "Która z wymienionych zasad NIE opiera się na WCAG 2.1?",
+                options: [
+                    "Postrzegalność",
+                    "Funkcjonalność",
+                    "Zrozumiałość",
+                    "Intuicyjność"
+                ],
+                correctAnswer: 3
+            },
+            {
+                question: "Która z technologii jest szczególnie zalecana w celu poprawy dostępności treści zgodnie z WCAG?",
+                options: [
+                    "Flash",
+                    "HTML",
+                    "Java Applet",
+                    "Silverlight"
+                ],
+                correctAnswer: 1
+            },
+            {
+                question: "Który poziom WCAG jest podstawowym wymogiem minimalnym?",
+                options: [
+                    "A",
+                    "AA",
+                    "AAA",
+                    "B"
+                ],
+                correctAnswer: 1
+            }
+        ];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Wymieszaj pytania na starcie
+        shuffleArray(questions);
+
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        const questionElement = document.getElementById("question");
+        const optionsContainer = document.getElementById("options");
+        const nextButton = document.getElementById("next-button");
+        const currentQuestionNum = document.getElementById("current-question-num");
+        const totalQuestions = document.getElementById("total-questions");
+        const totalQuestionsInSummary = document.getElementById("total-questions-summary");
+        const correctAnswersElement = document.getElementById("correct-answers");
+        const percentageElement = document.getElementById("percentage");
+        const quizContainer = document.getElementById("quiz-container");
+        const summaryContainer = document.getElementById("summary");
+
+        totalQuestions.textContent = questions.length;
+        totalQuestionsInSummary.textContent = questions.length;
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            questionElement.textContent = question.question;
+            currentQuestionNum.textContent = currentQuestion + 1;
+            optionsContainer.innerHTML = "";
+
+            // Tworzymy tablicę z odpowiedziami i indeksami
+            let options = question.options.map((option, index) => ({
+                text: option,
+                isCorrect: index === question.correctAnswer
+            }));
+
+            // Mieszamy odpowiedzi
+            shuffleArray(options);
+
+            // Znajdujemy nowy indeks poprawnej odpowiedzi po przemieszaniu
+            const newCorrectIndex = options.findIndex(option => option.isCorrect);
+            question.correctAnswer = newCorrectIndex;
+
+            options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-button";
+                button.textContent = option.text;
+                button.onclick = () => checkAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            nextButton.style.display = "none";
+        }
+
+        function showSummary() {
+            quizContainer.style.display = "none";
+            summaryContainer.style.display = "block";
+            correctAnswersElement.textContent = correctAnswers;
+            const percentage = ((correctAnswers / questions.length) * 100).toFixed(1);
+            percentageElement.textContent = percentage;
+        }
+
+        function checkAnswer(selectedIndex) {
+            const question = questions[currentQuestion];
+            const buttons = document.querySelectorAll(".option-button");
+
+            buttons.forEach(button => button.disabled = true);
+
+            buttons[question.correctAnswer].classList.add("correct");
+            if (selectedIndex !== question.correctAnswer) {
+                buttons[selectedIndex].classList.add("incorrect");
+            } else {
+                correctAnswers++;
+            }
+
+            if (currentQuestion < questions.length - 1) {
+                nextButton.style.display = "block";
+            } else {
+                nextButton.style.display = "block";
+                nextButton.textContent = "Zakończ quiz";
+            }
+        }
+
+        nextButton.onclick = () => {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showSummary();
+            }
+        };
+
+        // Start the quiz
+        showQuestion();
+    </script>
+</body>
+
+</html>
